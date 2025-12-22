@@ -10,7 +10,7 @@ const TopRiskGroups = () => {
   return (
     <div className="bg-white rounded-lg shadow-md border-2 border-gray-300 overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-red-50 to-orange-50 border-b-2 border-red-200 px-3 py-2">
+      <div className="bg-linear-to-r from-red-50 to-orange-50 border-b-2 border-red-200 px-3 py-2">
         <div className="flex items-center gap-2">
           <span className="text-lg">⚠️</span>
           <h3 className="text-sm font-bold text-gray-900">
@@ -31,7 +31,7 @@ const TopRiskGroups = () => {
                 {group.name}
               </p>
             </div>
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1 shrink-0">
               <span className="text-sm font-bold text-red-600">
                 {group.alerts.toLocaleString()}
               </span>

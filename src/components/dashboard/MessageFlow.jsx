@@ -75,20 +75,56 @@ const MessageFlow = () => {
 
     const data = [];
     for (let i = 0; i < points; i++) {
-      // Criar padrão de onda mais realista
-      const baseValue = 1000 + Math.sin(i * 0.5) * 300;
-      const randomVariation = Math.random() * 400;
+      // Criar padrão de onda mais realista para cada rede social
+      const baseValue = 800 + Math.sin(i * 0.5) * 200;
       const timeOfDayFactor =
         range.includes("h") && points === 24
-          ? Math.sin(((i - 6) * Math.PI) / 12) * 500 + 500 // Pico durante o dia
+          ? Math.sin(((i - 6) * Math.PI) / 12) * 400 + 400 // Pico durante o dia
           : 0;
+
+      // Telegram - mais ativo
+      const telegram = Math.floor(
+        baseValue * 1.5 + Math.random() * 300 + timeOfDayFactor
+      );
+
+      // WhatsApp - muito ativo
+      const whatsapp = Math.floor(
+        baseValue * 1.8 + Math.random() * 400 + timeOfDayFactor
+      );
+
+      // Facebook - ativo
+      const facebook = Math.floor(
+        baseValue * 1.2 + Math.random() * 250 + timeOfDayFactor * 0.8
+      );
+
+      // Instagram - moderado
+      const instagram = Math.floor(
+        baseValue * 1.0 + Math.random() * 200 + timeOfDayFactor * 0.9
+      );
+
+      // YouTube - menos ativo em mensagens
+      const youtube = Math.floor(
+        baseValue * 0.6 + Math.random() * 150 + timeOfDayFactor * 0.5
+      );
+
+      // Twitter/X - moderado
+      const twitter = Math.floor(
+        baseValue * 0.9 + Math.random() * 180 + timeOfDayFactor * 0.7
+      );
+
+      const totalMessages =
+        telegram + whatsapp + facebook + instagram + youtube + twitter;
 
       data.push({
         time: labelFormat(i),
-        messages: Math.floor(baseValue + randomVariation + timeOfDayFactor),
-        alerts: Math.floor(
-          (baseValue + randomVariation + timeOfDayFactor) * 0.05
-        ),
+        telegram,
+        whatsapp,
+        facebook,
+        instagram,
+        youtube,
+        twitter,
+        total: totalMessages,
+        alerts: Math.floor(totalMessages * 0.04), // 4% de alertas
       });
     }
     return data;
@@ -100,21 +136,61 @@ const MessageFlow = () => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
-          <p className="text-xs font-semibold text-gray-800 mb-1">
+          <p className="text-xs font-semibold text-gray-800 mb-2">
             {payload[0].payload.time}
           </p>
-          <p className="text-xs text-blue-600">
-            📨 Mensagens:{" "}
-            <span className="font-bold">
-              {payload[0].value.toLocaleString()}
-            </span>
-          </p>
-          <p className="text-xs text-red-600">
-            🚨 Alertas:{" "}
-            <span className="font-bold">
-              {payload[1].value.toLocaleString()}
-            </span>
-          </p>
+          <div className="space-y-1">
+            <p className="text-xs text-blue-500">
+              💬 Telegram:{" "}
+              <span className="font-bold">
+                {payload[0].payload.telegram.toLocaleString()}
+              </span>
+            </p>
+            <p className="text-xs text-green-600">
+              📱 WhatsApp:{" "}
+              <span className="font-bold">
+                {payload[0].payload.whatsapp.toLocaleString()}
+              </span>
+            </p>
+            <p className="text-xs text-blue-700">
+              👥 Facebook:{" "}
+              <span className="font-bold">
+                {payload[0].payload.facebook.toLocaleString()}
+              </span>
+            </p>
+            <p className="text-xs text-pink-600">
+              📸 Instagram:{" "}
+              <span className="font-bold">
+                {payload[0].payload.instagram.toLocaleString()}
+              </span>
+            </p>
+            <p className="text-xs text-red-600">
+              ▶️ YouTube:{" "}
+              <span className="font-bold">
+                {payload[0].payload.youtube.toLocaleString()}
+              </span>
+            </p>
+            <p className="text-xs text-sky-500">
+              🐦 Twitter:{" "}
+              <span className="font-bold">
+                {payload[0].payload.twitter.toLocaleString()}
+              </span>
+            </p>
+            <div className="pt-2 mt-2 border-t border-gray-200">
+              <p className="text-xs font-semibold text-gray-800">
+                📊 Total:{" "}
+                <span className="font-bold">
+                  {payload[0].payload.total.toLocaleString()}
+                </span>
+              </p>
+              <p className="text-xs text-red-600">
+                🚨 Alertas:{" "}
+                <span className="font-bold">
+                  {payload[0].payload.alerts.toLocaleString()}
+                </span>
+              </p>
+            </div>
+          </div>
         </div>
       );
     }
@@ -169,13 +245,29 @@ const MessageFlow = () => {
             margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
           >
             <defs>
-              <linearGradient id="colorMessages" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#66FCF1" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#66FCF1" stopOpacity={0.1} />
+              <linearGradient id="colorTelegram" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#0088cc" stopOpacity={0.6} />
+                <stop offset="95%" stopColor="#0088cc" stopOpacity={0.05} />
               </linearGradient>
-              <linearGradient id="colorAlerts" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1} />
+              <linearGradient id="colorWhatsApp" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#25D366" stopOpacity={0.6} />
+                <stop offset="95%" stopColor="#25D366" stopOpacity={0.05} />
+              </linearGradient>
+              <linearGradient id="colorFacebook" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#1877F2" stopOpacity={0.6} />
+                <stop offset="95%" stopColor="#1877F2" stopOpacity={0.05} />
+              </linearGradient>
+              <linearGradient id="colorInstagram" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#E4405F" stopOpacity={0.6} />
+                <stop offset="95%" stopColor="#E4405F" stopOpacity={0.05} />
+              </linearGradient>
+              <linearGradient id="colorYouTube" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#FF0000" stopOpacity={0.6} />
+                <stop offset="95%" stopColor="#FF0000" stopOpacity={0.05} />
+              </linearGradient>
+              <linearGradient id="colorTwitter" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#1DA1F2" stopOpacity={0.6} />
+                <stop offset="95%" stopColor="#1DA1F2" stopOpacity={0.05} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -193,21 +285,63 @@ const MessageFlow = () => {
             <Tooltip content={<CustomTooltip />} />
             <Area
               type="monotone"
-              dataKey="messages"
-              stroke="#66FCF1"
-              strokeWidth={2}
+              dataKey="whatsapp"
+              stroke="#25D366"
+              strokeWidth={1.5}
               fillOpacity={1}
-              fill="url(#colorMessages)"
-              name="Mensagens"
+              fill="url(#colorWhatsApp)"
+              name="WhatsApp"
+              stackId="1"
             />
             <Area
               type="monotone"
-              dataKey="alerts"
-              stroke="#ef4444"
-              strokeWidth={2}
+              dataKey="telegram"
+              stroke="#0088cc"
+              strokeWidth={1.5}
               fillOpacity={1}
-              fill="url(#colorAlerts)"
-              name="Alertas"
+              fill="url(#colorTelegram)"
+              name="Telegram"
+              stackId="1"
+            />
+            <Area
+              type="monotone"
+              dataKey="facebook"
+              stroke="#1877F2"
+              strokeWidth={1.5}
+              fillOpacity={1}
+              fill="url(#colorFacebook)"
+              name="Facebook"
+              stackId="1"
+            />
+            <Area
+              type="monotone"
+              dataKey="instagram"
+              stroke="#E4405F"
+              strokeWidth={1.5}
+              fillOpacity={1}
+              fill="url(#colorInstagram)"
+              name="Instagram"
+              stackId="1"
+            />
+            <Area
+              type="monotone"
+              dataKey="twitter"
+              stroke="#1DA1F2"
+              strokeWidth={1.5}
+              fillOpacity={1}
+              fill="url(#colorTwitter)"
+              name="Twitter"
+              stackId="1"
+            />
+            <Area
+              type="monotone"
+              dataKey="youtube"
+              stroke="#FF0000"
+              strokeWidth={1.5}
+              fillOpacity={1}
+              fill="url(#colorYouTube)"
+              name="YouTube"
+              stackId="1"
             />
           </AreaChart>
         </ResponsiveContainer>
@@ -215,13 +349,62 @@ const MessageFlow = () => {
 
       {/* Stats Footer */}
       <div className="bg-white border-t border-gray-200 px-6 py-4">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
+          <div className="text-center">
+            <p className="text-xs text-gray-500 mb-1">💬 Telegram</p>
+            <p className="text-lg font-bold text-blue-500">
+              {data
+                .reduce((acc, curr) => acc + curr.telegram, 0)
+                .toLocaleString()}
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-gray-500 mb-1">📱 WhatsApp</p>
+            <p className="text-lg font-bold text-green-600">
+              {data
+                .reduce((acc, curr) => acc + curr.whatsapp, 0)
+                .toLocaleString()}
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-gray-500 mb-1">👥 Facebook</p>
+            <p className="text-lg font-bold text-blue-700">
+              {data
+                .reduce((acc, curr) => acc + curr.facebook, 0)
+                .toLocaleString()}
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-gray-500 mb-1">📸 Instagram</p>
+            <p className="text-lg font-bold text-pink-600">
+              {data
+                .reduce((acc, curr) => acc + curr.instagram, 0)
+                .toLocaleString()}
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-gray-500 mb-1">▶️ YouTube</p>
+            <p className="text-lg font-bold text-red-600">
+              {data
+                .reduce((acc, curr) => acc + curr.youtube, 0)
+                .toLocaleString()}
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-gray-500 mb-1">🐦 Twitter</p>
+            <p className="text-lg font-bold text-sky-500">
+              {data
+                .reduce((acc, curr) => acc + curr.twitter, 0)
+                .toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-gray-100">
           <div className="text-center">
             <p className="text-xs text-gray-500 mb-1">Total Mensagens</p>
             <p className="text-lg font-bold" style={{ color: "#66FCF1" }}>
-              {data
-                .reduce((acc, curr) => acc + curr.messages, 0)
-                .toLocaleString()}
+              {data.reduce((acc, curr) => acc + curr.total, 0).toLocaleString()}
             </p>
           </div>
           <div className="text-center">
@@ -236,14 +419,14 @@ const MessageFlow = () => {
             <p className="text-xs text-gray-500 mb-1">Média/Período</p>
             <p className="text-lg font-bold text-gray-800">
               {Math.floor(
-                data.reduce((acc, curr) => acc + curr.messages, 0) / data.length
+                data.reduce((acc, curr) => acc + curr.total, 0) / data.length
               ).toLocaleString()}
             </p>
           </div>
           <div className="text-center">
             <p className="text-xs text-gray-500 mb-1">Pico Máximo</p>
             <p className="text-lg font-bold text-gray-800">
-              {Math.max(...data.map((d) => d.messages)).toLocaleString()}
+              {Math.max(...data.map((d) => d.total)).toLocaleString()}
             </p>
           </div>
         </div>
