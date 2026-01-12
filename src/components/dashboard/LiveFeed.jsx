@@ -1,207 +1,36 @@
 import { useState, useEffect, useRef } from "react";
+import useMessagesStore from "../../store/messagesStore";
 
 const LiveFeed = () => {
+  const {
+    messages: apiMessages,
+    loading,
+    error,
+    fetchMessages,
+  } = useMessagesStore();
   const [messages, setMessages] = useState([]);
   const feedRef = useRef(null);
   const [isAutoScroll, setIsAutoScroll] = useState(true);
   const [selectedMessage, setSelectedMessage] = useState(null);
 
-  const initialMessages = [
-    {
-      time: "08:51:32",
-      source: "🐉 DRAGON TIGER 🐯 [megaprime]",
-      content: "🎲 ATENÇÃO, POSSÍVEL ENTRADA ! 🎲...",
-      severity: null,
-    },
-    {
-      time: "08:51:51",
-      source: "🐉 DRAGON TIGER 🐯 [megaprime]",
-      content:
-        "✅ ENTRADA: 🔴 + 🟢 🎯 Entrar após: 🟡 🎲 Jogar até G2. 🤩 1 Greens Seguidos ✅ ...",
-      severity: null,
-    },
-    {
-      time: "08:52:13",
-      source: "🐉 DRAGON TIGER 🐯 [megaprime]",
-      content: "♻️ Gale 1 ✨ Tenha Gerenciamento!...",
-      severity: null,
-    },
-    {
-      time: "08:52:34",
-      source: "🐉 DRAGON TIGER 🐯 [megaprime]",
-      content: "♻️ Gale 2 ✨ Tenha Gerenciamento!...",
-      severity: null,
-    },
-    {
-      time: "08:52:36",
-      source: "🔍 CONSULTAS GRÁTIS 🔎",
-      content: "/nome Lucas Pachele Pereira...",
-      severity: { n1: "0U 0K", n2: "phishing (55%)", n3: "MEDIA" },
-    },
-    {
-      time: "08:52:36",
-      source: "🔍 CONSULTAS GRÁTIS 🔎",
-      content:
-        "**🔘 SELECIONE UM BANCO DE DADOS!** **🔍 CONSULTA:** `Lucas Pachele Pereira`...",
-      severity: { n1: "0U 0K", n2: "phishing (55%)", n3: "MEDIA" },
-    },
-    {
-      time: "08:52:49",
-      source: "🔍 CONSULTAS GRÁTIS 🔎",
-      content: "/nome Lucas Pachele Pereira...",
-      severity: null,
-    },
-    {
-      time: "08:52:50",
-      source: "🔍 CONSULTAS GRÁTIS 🔎",
-      content:
-        "**🔘 SELECIONE UM BANCO DE DADOS!** **🔍 CONSULTA:** `Lucas Pachele Pereira`...",
-      severity: { n1: "0U 0K", n2: "phishing (55%)", n3: "MEDIA" },
-    },
-    {
-      time: "08:53:04",
-      source: "🐉 DRAGON TIGER 🐯 [megaprime]",
-      content: "✨ Volte mais tarde!...",
-      severity: null,
-    },
-    {
-      time: "08:53:06",
-      source: "🐉 DRAGON TIGER 🐯 [megaprime]",
-      content: "🎲 ATENÇÃO, POSSÍVEL ENTRADA ! 🎲...",
-      severity: null,
-    },
-    {
-      time: "08:53:28",
-      source: "🐉 DRAGON TIGER 🐯 [megaprime]",
-      content:
-        "✅ ENTRADA: 🔴 + 🟢 🎯 Entrar após: 🟡 🎲 Jogar até G2. 🤩 0 Greens Seguidos ✅ ...",
-      severity: null,
-    },
-    {
-      time: "08:53:29",
-      source: "Consultas de cpf grátis",
-      content: "/CPF `01590428951`...",
-      severity: { n1: "0U 0K", n2: "vazamento_dados (55%)", n3: "MEDIA" },
-    },
-    {
-      time: "08:53:29",
-      source: "Consultas de cpf grátis",
-      content:
-        "**🔎 CONSULTA DE CPF 🔎** **🆔 CPF:** `01590428951` **👤 USUARIO:** @O Bode *...",
-      severity: { n1: "0U 0K", n2: "vazamento_dados (55%)", n3: "MEDIA" },
-    },
-    {
-      time: "08:53:33",
-      source: "Cooperaçao 60% até 75% do montante",
-      content: "...",
-      severity: null,
-    },
-    {
-      time: "08:53:33",
-      source: "Cooperaçao 60% até 75% do montante",
-      content: "...",
-      severity: null,
-    },
-    {
-      time: "08:53:33",
-      source: "Cooperaçao 60% até 75% do montante",
-      content:
-        "🆕🆕🆕🆕🆕🆕   🅰️🅰️🅰️🅰️🅰️   🅰️🅰️🅰️ 💰 **MONTANTE DE  65%** 💰 💄**NÃO...",
-      severity: { n1: "1U 0K", n2: "vazamento_dados (55%)", n3: "MEDIA" },
-    },
-    {
-      time: "08:53:33",
-      source: "Cooperaçao 60% até 75% do montante",
-      content: "...",
-      severity: null,
-    },
-    {
-      time: "08:53:36",
-      source: "Consultas de cpf grátis",
-      content:
-        "**🔎 CONSULTA REALIZADA COM SUCESSO** **Base:** CPF | CREDLINK** Clique no arq...",
-      severity: { n1: "0U 0K", n2: "vazamento_dados (55%)", n3: "MEDIA" },
-    },
-    {
-      time: "08:53:42",
-      source: "Consultas de cpf grátis",
-      content: "/placa LOO6B11...",
-      severity: null,
-    },
-    {
-      time: "08:53:42",
-      source: "Consultas de cpf grátis",
-      content:
-        "**🔎 CONSULTA DE PLACA 🔎** **🆔 PLACA:** `LOO6B11` **👤 USUARIO:** @Daniel *...",
-      severity: null,
-    },
-    {
-      time: "08:53:50",
-      source: "🐉 DRAGON TIGER 🐯 [megaprime]",
-      content: "♻️ Gale 1 ✨ Tenha Gerenciamento!...",
-      severity: null,
-    },
-  ];
-
-  const newMessagesPool = [
-    {
-      source: "🐉 DRAGON TIGER 🐯 [megaprime]",
-      content: "✅ GREEN! Parabéns! 🎉",
-      severity: null,
-    },
-    {
-      source: "Consultas de cpf grátis",
-      content: "/CPF `12345678900`...",
-      severity: { n1: "0U 0K", n2: "vazamento_dados (55%)", n3: "MEDIA" },
-    },
-    {
-      source: "🔍 CONSULTAS GRÁTIS 🔎",
-      content: "**🔎 NOVA CONSULTA PROCESSADA**",
-      severity: { n1: "1U 0K", n2: "phishing (60%)", n3: "ALTA" },
-    },
-    {
-      source: "Sistema de Alertas",
-      content: "⚠️ Atividade suspeita detectada!",
-      severity: { n1: "2U 0K", n2: "malware (75%)", n3: "ALTA" },
-    },
-    {
-      source: "🐉 DRAGON TIGER 🐯 [megaprime]",
-      content: "🎲 NOVA ENTRADA DISPONÍVEL! 🎲",
-      severity: null,
-    },
-  ];
-
+  // Buscar mensagens da API
   useEffect(() => {
-    setMessages(initialMessages);
-  }, []);
+    fetchMessages();
 
-  useEffect(() => {
+    // Atualizar a cada 10 segundos
     const interval = setInterval(() => {
-      const randomMessage =
-        newMessagesPool[Math.floor(Math.random() * newMessagesPool.length)];
-      const now = new Date();
-      const time = `${String(now.getHours()).padStart(2, "0")}:${String(
-        now.getMinutes()
-      ).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
-
-      const newMessage = {
-        time,
-        source: randomMessage.source,
-        content: randomMessage.content,
-        severity: randomMessage.severity,
-        isNew: true,
-      };
-
-      setMessages((prev) => [...prev, newMessage]);
-
-      // Remove isNew flag after animation
-      setTimeout(() => {
-        setMessages((prev) => prev.map((msg) => ({ ...msg, isNew: false })));
-      }, 500);
-    }, 3000);
+      fetchMessages();
+    }, 10000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchMessages]);
+
+  // Sincronizar mensagens da API com o estado local
+  useEffect(() => {
+    if (apiMessages.length > 0) {
+      setMessages(apiMessages);
+    }
+  }, [apiMessages]);
 
   useEffect(() => {
     if (isAutoScroll && feedRef.current) {
@@ -233,11 +62,7 @@ const LiveFeed = () => {
       dateTime,
       channel: msg.source,
       content: msg.content,
-      sender: msg.source.includes("DRAGON")
-        ? "BetBot"
-        : msg.source.includes("Consultas")
-        ? "HakaiBuscas"
-        : "Sistema",
+      sender: msg.sender || "Sistema",
       urls: Math.floor(Math.random() * 3),
       keywords: Math.floor(Math.random() * 5),
       type: msg.severity?.n2?.split(" ")[0] || "normal",
@@ -516,6 +341,33 @@ const LiveFeed = () => {
           className="h-96 overflow-y-auto p-4 space-y-2 bg-gray-50"
           style={{ scrollBehavior: "smooth" }}
         >
+          {/* Loading State */}
+          {loading && messages.length === 0 && (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                <p className="text-sm text-gray-500">Carregando mensagens...</p>
+              </div>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-2">
+              <p className="text-sm text-red-600 text-center">⚠️ {error}</p>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!loading && !error && messages.length === 0 && (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-sm text-gray-500">
+                Nenhuma mensagem disponível
+              </p>
+            </div>
+          )}
+
+          {/* Messages List */}
           {messages.map((msg, index) => (
             <div
               key={index}

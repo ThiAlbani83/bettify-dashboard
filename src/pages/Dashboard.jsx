@@ -1,15 +1,35 @@
-import React from "react";
+import React, { useEffect } from "react";
 import LiveFeed from "../components/dashboard/LiveFeed";
 import MessageFlow from "../components/dashboard/MessageFlow";
 import Analytics from "../components/dashboard/Analytics";
 import TopRiskGroups from "../components/dashboard/TopRiskGroups";
 import RecentMedia from "../components/dashboard/RecentMedia";
+import useStatsStore from "../store/statsStore";
 
 const Dashboard = () => {
+  const { stats, loading, error, fetchStats, lastUpdate } = useStatsStore();
+
+  // Buscar estatísticas ao montar o componente
+  useEffect(() => {
+    fetchStats();
+
+    // Atualizar a cada 30 segundos
+    const interval = setInterval(() => {
+      fetchStats();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [fetchStats]);
+
+  // Função para formatar números
+  const formatNumber = (num) => {
+    return num.toLocaleString("pt-BR");
+  };
+
   const kpis = [
     {
       title: "MENSAGENS (24H)",
-      value: "125.186",
+      value: formatNumber(stats.total_mensagens),
       icon: "📨",
       subtitle: "Tempo real",
       color: "#66FCF1",
@@ -17,7 +37,7 @@ const Dashboard = () => {
     },
     {
       title: "SEVERIDADE",
-      value: "17",
+      value: formatNumber(stats.alertas_criticos),
       icon: "🚨",
       subtitle: "Alertas",
       color: "#ef4444",
@@ -25,7 +45,7 @@ const Dashboard = () => {
     },
     {
       title: "URLS SUSPEITAS",
-      value: "5",
+      value: formatNumber(stats.total_links),
       icon: "🔗",
       subtitle: "Análise",
       color: "#f59e0b",
@@ -33,7 +53,7 @@ const Dashboard = () => {
     },
     {
       title: "GRUPOS ATIVOS",
-      value: "369",
+      value: formatNumber(stats.total_grupos),
       icon: "👥",
       subtitle: "Monitorados",
       color: "#8b5cf6",
@@ -41,23 +61,23 @@ const Dashboard = () => {
     },
     {
       title: "USUÁRIOS",
-      value: "17.314.554",
+      value: formatNumber(stats.total_membros_monitorados),
       icon: "👤",
       subtitle: "Ativos",
       color: "#3b82f6",
       bgColor: "#eff6ff",
     },
     {
-      title: "LINKS CONVITE",
-      value: "25",
-      icon: "🔗",
-      subtitle: "Novos",
+      title: "MÍDIAS",
+      value: formatNumber(stats.total_midias),
+      icon: "📷",
+      subtitle: "Anexos",
       color: "#10b981",
       bgColor: "#f0fdf4",
     },
     {
       title: "PENDENTES",
-      value: "0",
+      value: formatNumber(stats.links_pendentes),
       icon: "⏳",
       subtitle: "Fila",
       color: "#6b7280",
@@ -76,6 +96,21 @@ const Dashboard = () => {
             Visão geral do Command Center
           </p>
         </div>
+
+        {/* Loading/Error States */}
+        {loading && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-blue-700 font-medium">
+              Carregando estatísticas...
+            </p>
+          </div>
+        )}
+
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-700 font-medium">Erro: {error}</p>
+          </div>
+        )}
 
         {/* KPI Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
@@ -138,7 +173,9 @@ const Dashboard = () => {
             <p className="text-sm text-gray-800 font-medium">
               Última atualização:{" "}
               <span className="font-bold text-gray-900">
-                {new Date().toLocaleString("pt-BR")}
+                {lastUpdate
+                  ? lastUpdate.toLocaleString("pt-BR")
+                  : new Date().toLocaleString("pt-BR")}
               </span>
             </p>
           </div>

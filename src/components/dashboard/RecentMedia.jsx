@@ -1,7 +1,46 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import useMediaStore from "../../store/mediaStore";
 
 const RecentMedia = () => {
   const [selectedMedia, setSelectedMedia] = useState(null);
+  const { recentMedia, loading, error, fetchRecentMedia } = useMediaStore();
+
+  // Buscar mídias recentes da API
+  useEffect(() => {
+    fetchRecentMedia();
+
+    // Atualizar a cada 30 segundos
+    const interval = setInterval(() => {
+      fetchRecentMedia();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [fetchRecentMedia]);
+
+  // Função para formatar tipo de mídia
+  const formatMediaType = (tipo) => {
+    const types = {
+      imagem: "IMG",
+      video: "VID",
+      audio: "AUD",
+      documento: "DOC",
+    };
+    return types[tipo] || "MEDIA";
+  };
+
+  // Função para formatar data
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+
+    if (diffMins < 1) return "Agora";
+    if (diffMins < 60) return `Há ${diffMins} min`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `Há ${diffHours}h`;
+    return date.toLocaleDateString("pt-BR");
+  };
 
   const mediaItems = [
     {
@@ -69,7 +108,7 @@ const RecentMedia = () => {
           onClick={() => setSelectedMedia(null)}
         >
           <div
-            className="bg-white rounded-xl shadow-2xl max-w-2xl w-full"
+            className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -99,21 +138,70 @@ const RecentMedia = () => {
                 </button>
               </div>
               <p className="text-sm mt-2 opacity-90">
-                Canal: {selectedMedia.channel}
+                Canal: {selectedMedia.canal}
+              </p>
+              <p className="text-xs mt-1 opacity-80">
+                Remetente: {selectedMedia.remetente} |{" "}
+                {formatDate(selectedMedia.data_hora)}
               </p>
             </div>
 
             {/* Modal Content */}
             <div className="p-6 space-y-4">
               {/* Preview */}
-              <div className="bg-gray-100 rounded-lg p-8 flex items-center justify-center border-2 border-gray-300">
-                <div className="text-center">
-                  <div className="w-32 h-32 bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg mx-auto mb-4 flex items-center justify-center">
-                    <span className="text-4xl text-white">🖼️</span>
+              <div className="bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-300">
+                {selectedMedia.tipo === "imagem" ? (
+                  <img
+                    src={`http://72.60.49.22:8005${selectedMedia.arquivo_path}`}
+                    alt={selectedMedia.arquivo_nome}
+                    className="w-full h-auto max-h-96 object-contain"
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                      e.target.nextSibling.style.display = "flex";
+                    }}
+                  />
+                ) : selectedMedia.tipo === "video" ? (
+                  <video
+                    src={`http://72.60.49.22:8005${selectedMedia.arquivo_path}`}
+                    controls
+                    className="w-full h-auto max-h-96"
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                      e.target.nextSibling.style.display = "flex";
+                    }}
+                  >
+                    Seu navegador não suporta a reprodução de vídeos.
+                  </video>
+                ) : (
+                  <div className="p-8 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="w-32 h-32 bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg mx-auto mb-4 flex items-center justify-center">
+                        <span className="text-4xl text-white">🎵</span>
+                      </div>
+                      <p className="text-sm text-gray-600 font-semibold">
+                        {selectedMedia.arquivo_nome}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-600 font-semibold">
-                    Imagem processada com OCR
-                  </p>
+                )}
+                {/* Fallback para erro de carregamento */}
+                <div
+                  style={{ display: "none" }}
+                  className="p-8 items-center justify-center"
+                >
+                  <div className="text-center">
+                    <div className="w-32 h-32 bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg mx-auto mb-4 flex items-center justify-center">
+                      <span className="text-4xl text-white">
+                        {selectedMedia.tipo === "imagem" ? "🖼️" : "🎥"}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 font-semibold">
+                      {selectedMedia.arquivo_nome}
+                    </p>
+                    <p className="text-xs text-red-600 mt-2">
+                      Erro ao carregar mídia
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -122,26 +210,51 @@ const RecentMedia = () => {
                 <div className="bg-gray-50 rounded-lg p-4 border-2 border-gray-300">
                   <p className="text-xs text-gray-700 font-bold mb-1">Tipo</p>
                   <p className="text-lg font-bold text-purple-600">
-                    {selectedMedia.type}
+                    {formatMediaType(selectedMedia.tipo)}
                   </p>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4 border-2 border-gray-300">
-                  <p className="text-xs text-gray-700 font-bold mb-1">Score</p>
+                  <p className="text-xs text-gray-700 font-bold mb-1">Status</p>
                   <p className="text-lg font-bold text-gray-600">
-                    {selectedMedia.score}
+                    {selectedMedia.processado ? "Processado" : "Pendente"}
                   </p>
                 </div>
               </div>
 
-              {/* Extracted Text */}
+              {/* Associated Text */}
+              {selectedMedia.texto_associado && (
+                <div className="bg-gray-50 rounded-lg p-4 border-2 border-gray-200">
+                  <p className="text-sm font-bold text-gray-900 mb-2">
+                    💬 Texto Associado:
+                  </p>
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                    {selectedMedia.texto_associado}
+                  </p>
+                </div>
+              )}
+
+              {/* Extracted Text (OCR) */}
               <div className="bg-blue-50 rounded-lg p-4 border-2 border-blue-200">
                 <p className="text-sm font-bold text-gray-900 mb-2">
-                  📄 Texto Extraído:
+                  📄 Texto Extraído (OCR):
                 </p>
                 <p className="text-sm text-gray-700 italic">
-                  {selectedMedia.extracted || "Nenhum texto extraído."}
+                  {selectedMedia.ocr_texto || "Nenhum texto extraído."}
                 </p>
               </div>
+
+              {/* Transcription */}
+              {selectedMedia.tipo === "video" && (
+                <div className="bg-green-50 rounded-lg p-4 border-2 border-green-200">
+                  <p className="text-sm font-bold text-gray-900 mb-2">
+                    🎤 Transcrição:
+                  </p>
+                  <p className="text-sm text-gray-700 italic">
+                    {selectedMedia.transcricao ||
+                      "Nenhuma transcrição disponível."}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Modal Footer */}
@@ -170,46 +283,89 @@ const RecentMedia = () => {
 
         {/* Media Grid */}
         <div className="p-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-            {mediaItems.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => setSelectedMedia(item)}
-                className="bg-gray-100 rounded p-2 border border-gray-300 hover:border-purple-400 hover:shadow-sm transition-all cursor-pointer group"
-              >
-                {/* Layout 2 Colunas: Imagem à Esquerda e Texto à Direita */}
-                <div className="flex gap-2">
-                  {/* Coluna Esquerda: Imagem/Badge */}
-                  <div className="shrink-0">
-                    <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-blue-400 rounded flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <span className="text-white font-bold text-xs">
-                        {item.type}
-                      </span>
+          {loading && recentMedia.length === 0 ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center">
+                <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                <p className="text-sm text-gray-500">Carregando mídias...</p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 m-2">
+              <p className="text-sm text-red-600 text-center">⚠️ {error}</p>
+            </div>
+          ) : recentMedia.length === 0 ? (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-sm text-gray-500">Nenhuma mídia disponível</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              {recentMedia.map((item) => (
+                <div
+                  key={item._id}
+                  onClick={() => setSelectedMedia(item)}
+                  className="bg-gray-100 rounded p-2 border border-gray-300 hover:border-purple-400 hover:shadow-sm transition-all cursor-pointer group"
+                >
+                  {/* Layout 2 Colunas: Imagem à Esquerda e Texto à Direita */}
+                  <div className="flex gap-2">
+                    {/* Coluna Esquerda: Imagem/Badge */}
+                    <div className="shrink-0">
+                      {item.tipo === "imagem" ? (
+                        <div className="w-12 h-12 rounded overflow-hidden group-hover:scale-105 transition-transform">
+                          <img
+                            src={`http://72.60.49.22:8005${item.arquivo_path}`}
+                            alt={item.arquivo_nome}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                              e.target.parentElement.classList.add(
+                                "bg-gradient-to-br",
+                                "from-purple-400",
+                                "to-blue-400",
+                                "flex",
+                                "items-center",
+                                "justify-center"
+                              );
+                              e.target.parentElement.innerHTML =
+                                '<span class="text-white font-bold text-xs">IMG</span>';
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-blue-400 rounded flex items-center justify-center group-hover:scale-105 transition-transform">
+                          <span className="text-white font-bold text-xs">
+                            {formatMediaType(item.tipo)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Coluna Direita: Texto */}
+                    <div className="flex-1 flex flex-col justify-center min-w-0">
+                      {/* Channel Name */}
+                      <p className="text-[10px] font-semibold text-gray-900 truncate mb-1">
+                        {item.canal}
+                      </p>
+
+                      {/* Extracted Text Preview */}
+                      <p className="text-[9px] text-gray-600 italic line-clamp-2">
+                        {item.texto_associado || "Sem texto..."}
+                      </p>
                     </div>
                   </div>
-
-                  {/* Coluna Direita: Texto */}
-                  <div className="flex-1 flex flex-col justify-center min-w-0">
-                    {/* Channel Name */}
-                    <p className="text-[10px] font-semibold text-gray-900 truncate mb-1">
-                      {item.channel}
-                    </p>
-
-                    {/* Extracted Text Preview */}
-                    <p className="text-[9px] text-gray-600 italic line-clamp-2">
-                      {item.text}
-                    </p>
-                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Footer */}
         <div className="bg-gray-50 border-t border-gray-200 px-2 py-1.5">
           <p className="text-[12px] text-gray-700 font-semibold text-center">
-            {mediaItems.length} mídias • Há 2 min
+            {recentMedia.length} mídias •{" "}
+            {recentMedia.length > 0
+              ? formatDate(recentMedia[0].data_hora)
+              : "Aguardando..."}
           </p>
         </div>
       </div>
