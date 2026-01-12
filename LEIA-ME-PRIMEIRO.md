@@ -16,16 +16,20 @@ O Vercel fará deploy automaticamente com o proxy configurado.
 
 ## 📝 O que foi feito
 
-### 1. Criado `vercel.json` 
+### 1. Criado `vercel.json`
+
 Proxy reverso que redireciona `/api/*` para a API HTTP de forma segura via HTTPS.
 
 ### 2. Atualizado `vite.config.js`
+
 Adicionado proxy local para desenvolvimento funcionar igual à produção.
 
 ### 3. Atualizado `src/config/api.js`
+
 Configurado para usar URLs relativas (`/api/*`) em vez de absolutas.
 
 ### 4. Atualizado `.env`
+
 Removido URL hardcoded - agora usa proxy automático.
 
 ---
@@ -50,7 +54,7 @@ Navegador → HTTPS /api/messages
 
 ❌ Configurar `VITE_API_BASE_URL` no Vercel  
 ❌ Adicionar variáveis de ambiente  
-❌ Modificar configurações no dashboard  
+❌ Modificar configurações no dashboard
 
 Tudo funciona automaticamente via `vercel.json`! 🎉
 
