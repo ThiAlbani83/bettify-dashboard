@@ -1,6 +1,7 @@
 // Configuração centralizada da API
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://72.60.49.22:8005";
+// Em produção (Vercel), usa proxy reverso (/api)
+// Em desenvolvimento, pode usar proxy do Vite ou URL direta
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 export const API_ENDPOINTS = {
   // Messages
