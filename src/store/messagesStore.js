@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { API_ENDPOINTS } from "../config/api";
 
 const useMessagesStore = create((set, get) => ({
   // Estado inicial
@@ -11,7 +12,7 @@ const useMessagesStore = create((set, get) => ({
   fetchMessages: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await fetch("http://72.60.49.22:8005/api/messages");
+      const response = await fetch(API_ENDPOINTS.messages);
       if (!response.ok) {
         throw new Error("Erro ao buscar mensagens");
       }

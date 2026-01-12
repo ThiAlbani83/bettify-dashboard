@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { API_ENDPOINTS } from "../config/api";
 
 const useTopGroupsStore = create((set) => ({
   // Estado inicial
@@ -11,9 +12,7 @@ const useTopGroupsStore = create((set) => ({
   fetchTopGroups: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await fetch(
-        "http://72.60.49.22:8005/api/stats/top-groups"
-      );
+      const response = await fetch(API_ENDPOINTS.statsTopGroups);
       if (!response.ok) {
         throw new Error("Erro ao buscar top grupos de risco");
       }

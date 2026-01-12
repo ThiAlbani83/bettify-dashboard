@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import useMediaStore from "../../store/mediaStore";
+import { getMediaUrl } from "../../config/api";
 
 const RecentMedia = () => {
   const [selectedMedia, setSelectedMedia] = useState(null);
@@ -152,7 +153,7 @@ const RecentMedia = () => {
               <div className="bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-300">
                 {selectedMedia.tipo === "imagem" ? (
                   <img
-                    src={`http://72.60.49.22:8005${selectedMedia.arquivo_path}`}
+                    src={getMediaUrl(selectedMedia.arquivo_path)}
                     alt={selectedMedia.arquivo_nome}
                     className="w-full h-auto max-h-96 object-contain"
                     onError={(e) => {
@@ -162,7 +163,7 @@ const RecentMedia = () => {
                   />
                 ) : selectedMedia.tipo === "video" ? (
                   <video
-                    src={`http://72.60.49.22:8005${selectedMedia.arquivo_path}`}
+                    src={getMediaUrl(selectedMedia.arquivo_path)}
                     controls
                     className="w-full h-auto max-h-96"
                     onError={(e) => {
@@ -313,7 +314,7 @@ const RecentMedia = () => {
                       {item.tipo === "imagem" ? (
                         <div className="w-12 h-12 rounded overflow-hidden group-hover:scale-105 transition-transform">
                           <img
-                            src={`http://72.60.49.22:8005${item.arquivo_path}`}
+                            src={getMediaUrl(item.arquivo_path)}
                             alt={item.arquivo_nome}
                             className="w-full h-full object-cover"
                             onError={(e) => {

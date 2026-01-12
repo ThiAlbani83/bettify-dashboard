@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { API_ENDPOINTS } from "../config/api";
 
 const useStatsStore = create((set) => ({
   // Estado inicial
@@ -20,7 +21,7 @@ const useStatsStore = create((set) => ({
   fetchStats: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await fetch("http://72.60.49.22:8005/api/stats");
+      const response = await fetch(API_ENDPOINTS.stats);
       if (!response.ok) {
         throw new Error("Erro ao buscar estatísticas");
       }

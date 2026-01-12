@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { API_ENDPOINTS } from "../config/api";
 
 const useAnalyticsStore = create((set, get) => ({
   // Estado inicial
@@ -17,9 +18,7 @@ const useAnalyticsStore = create((set, get) => ({
   // Ação para buscar stats em tempo real
   fetchStatsTempoReal: async () => {
     try {
-      const response = await fetch(
-        "http://72.60.49.22:8005/api/analytics/stats-tempo-real"
-      );
+      const response = await fetch(API_ENDPOINTS.analyticsStatsTempoReal);
       if (!response.ok) {
         throw new Error("Erro ao buscar stats em tempo real");
       }
@@ -38,9 +37,7 @@ const useAnalyticsStore = create((set, get) => ({
   fetchPrioridades: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await fetch(
-        "http://72.60.49.22:8005/api/analytics/prioridades"
-      );
+      const response = await fetch(API_ENDPOINTS.analyticsPrioridades);
       if (!response.ok) {
         throw new Error("Erro ao buscar prioridades");
       }
@@ -63,9 +60,7 @@ const useAnalyticsStore = create((set, get) => ({
   // Ação para buscar grupos perigosos
   fetchGruposPerigosos: async () => {
     try {
-      const response = await fetch(
-        "http://72.60.49.22:8005/api/analytics/top-grupos"
-      );
+      const response = await fetch(API_ENDPOINTS.analyticsTopGrupos);
       if (!response.ok) {
         throw new Error("Erro ao buscar grupos perigosos");
       }
@@ -83,9 +78,7 @@ const useAnalyticsStore = create((set, get) => ({
   // Ação para buscar alertas por hora
   fetchAlertasPorHora: async () => {
     try {
-      const response = await fetch(
-        "http://72.60.49.22:8005/api/analytics/alertas-por-hora"
-      );
+      const response = await fetch(API_ENDPOINTS.analyticsAlertasPorHora);
       if (!response.ok) {
         throw new Error("Erro ao buscar alertas por hora");
       }
@@ -103,9 +96,7 @@ const useAnalyticsStore = create((set, get) => ({
   // Ação para buscar performance do pipeline
   fetchPipeline: async () => {
     try {
-      const response = await fetch(
-        "http://72.60.49.22:8005/api/analytics/pipeline-performance"
-      );
+      const response = await fetch(API_ENDPOINTS.analyticsPipelinePerformance);
       if (!response.ok) {
         throw new Error("Erro ao buscar pipeline");
       }
@@ -123,9 +114,7 @@ const useAnalyticsStore = create((set, get) => ({
   // Ação para buscar keywords
   fetchKeywords: async () => {
     try {
-      const response = await fetch(
-        "http://72.60.49.22:8005/api/analytics/keywords"
-      );
+      const response = await fetch(API_ENDPOINTS.analyticsKeywords);
       if (!response.ok) {
         throw new Error("Erro ao buscar keywords");
       }
@@ -143,9 +132,7 @@ const useAnalyticsStore = create((set, get) => ({
   // Ação para buscar saúde do sistema
   fetchSaudeDoSistema: async () => {
     try {
-      const response = await fetch(
-        "http://72.60.49.22:8005/api/analytics/saude-sistema"
-      );
+      const response = await fetch(API_ENDPOINTS.analyticsSaudeSistema);
       if (!response.ok) {
         throw new Error("Erro ao buscar saúde do sistema");
       }
@@ -163,9 +150,7 @@ const useAnalyticsStore = create((set, get) => ({
   // Ação para buscar status de infiltração
   fetchInfiltracaoStatus: async () => {
     try {
-      const response = await fetch(
-        "http://72.60.49.22:8005/api/analytics/infiltracao-status"
-      );
+      const response = await fetch(API_ENDPOINTS.analyticsInfiltracao);
       if (!response.ok) {
         throw new Error("Erro ao buscar status de infiltração");
       }
