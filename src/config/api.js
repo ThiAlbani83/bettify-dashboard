@@ -23,6 +23,21 @@ export const API_ENDPOINTS = {
   analyticsKeywords: `${API_BASE_URL}/api/analytics/keywords`,
   analyticsSaudeSistema: `${API_BASE_URL}/api/analytics/saude-sistema`,
   analyticsInfiltracao: `${API_BASE_URL}/api/analytics/infiltracao-status`,
+
+  // Alerts
+  keywordAlerts: `${API_BASE_URL}/api/keyword-alerts`,
+  keywordAlertsStats: `${API_BASE_URL}/api/keyword-alerts/stats`,
+  keywordAlertUpdateStatus: (alertId) =>
+    `${API_BASE_URL}/api/keyword-alerts/${alertId}/status`,
+  keywordAlertDelete: (alertId) =>
+    `${API_BASE_URL}/api/keyword-alerts/${alertId}`,
+
+  // Audit Links
+  auditLinks: `${API_BASE_URL}/api/alerts`,
+  auditLinksStats: `${API_BASE_URL}/api/alerts/stats`,
+  auditLinkUpdateStatus: (linkId) =>
+    `${API_BASE_URL}/api/alerts/${linkId}/status`,
+  auditLinkDelete: (linkId) => `${API_BASE_URL}/api/alerts/${linkId}`,
 };
 
 // Helper para construir URL de arquivos

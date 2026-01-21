@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 
 export default function Sidebar({ isOpen, onToggle, isCollapsed, onCollapse }) {
-  const [activeMenu, setActiveMenu] = useState("visao-geral");
+  const location = useLocation();
 
   const menuItems = [
     {
       id: "visao-geral",
       name: "Visão Geral",
+      path: "/visao-geral",
       icon: (
         <svg
           className="w-5 h-5"
@@ -26,6 +27,7 @@ export default function Sidebar({ isOpen, onToggle, isCollapsed, onCollapse }) {
     {
       id: "alertas",
       name: "Alertas",
+      path: "/alertas",
       icon: (
         <svg
           className="w-5 h-5"
@@ -45,6 +47,7 @@ export default function Sidebar({ isOpen, onToggle, isCollapsed, onCollapse }) {
     {
       id: "auditoria",
       name: "Auditoria de Links",
+      path: "/auditoria",
       icon: (
         <svg
           className="w-5 h-5"
@@ -64,6 +67,7 @@ export default function Sidebar({ isOpen, onToggle, isCollapsed, onCollapse }) {
     {
       id: "galeria",
       name: "Galeria Mídia",
+      path: "/galeria",
       icon: (
         <svg
           className="w-5 h-5"
@@ -83,6 +87,7 @@ export default function Sidebar({ isOpen, onToggle, isCollapsed, onCollapse }) {
     {
       id: "links-convite",
       name: "Links Convite",
+      path: "/links-convite",
       icon: (
         <svg
           className="w-5 h-5"
@@ -102,6 +107,7 @@ export default function Sidebar({ isOpen, onToggle, isCollapsed, onCollapse }) {
     {
       id: "rede-grupos",
       name: "Rede de Grupos",
+      path: "/rede-grupos",
       icon: (
         <svg
           className="w-5 h-5"
@@ -121,6 +127,7 @@ export default function Sidebar({ isOpen, onToggle, isCollapsed, onCollapse }) {
     {
       id: "pipeline",
       name: "Pipeline",
+      path: "/pipeline",
       icon: (
         <svg
           className="w-5 h-5"
@@ -140,6 +147,7 @@ export default function Sidebar({ isOpen, onToggle, isCollapsed, onCollapse }) {
     {
       id: "configuracoes",
       name: "Configurações",
+      path: "/configuracoes",
       icon: (
         <svg
           className="w-5 h-5"
@@ -214,45 +222,49 @@ export default function Sidebar({ isOpen, onToggle, isCollapsed, onCollapse }) {
         >
           {menuItems.map((item) => (
             <div key={item.id} className="relative group">
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveMenu(item.id);
-                }}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                  activeMenu === item.id
-                    ? "text-gray-900 font-medium shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                } ${isCollapsed ? "justify-center" : ""}`}
-                style={{
-                  backgroundColor:
-                    activeMenu === item.id ? "#66FCF1" : "transparent",
-                }}
+              <NavLink
+                to={item.path}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                    isActive
+                      ? "text-gray-900 font-medium shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  } ${isCollapsed ? "justify-center" : ""}`
+                }
+                style={({ isActive }) => ({
+                  backgroundColor: isActive ? "#66FCF1" : "transparent",
+                })}
                 onMouseEnter={(e) => {
-                  if (activeMenu !== item.id) {
+                  if (!e.currentTarget.classList.contains("active")) {
                     e.currentTarget.style.backgroundColor = "#f0fffe";
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (activeMenu !== item.id) {
+                  const isActive = location.pathname === item.path;
+                  if (!isActive) {
                     e.currentTarget.style.backgroundColor = "transparent";
                   }
                 }}
               >
-                <span
-                  className={
-                    activeMenu === item.id
-                      ? "text-gray-900"
-                      : "text-gray-500 group-hover:text-gray-700"
-                  }
-                >
-                  {item.icon}
-                </span>
-                {!isCollapsed && (
-                  <span className="text-sm whitespace-nowrap">{item.name}</span>
+                {({ isActive }) => (
+                  <>
+                    <span
+                      className={
+                        isActive
+                          ? "text-gray-900"
+                          : "text-gray-500 group-hover:text-gray-700"
+                      }
+                    >
+                      {item.icon}
+                    </span>
+                    {!isCollapsed && (
+                      <span className="text-sm whitespace-nowrap">
+                        {item.name}
+                      </span>
+                    )}
+                  </>
                 )}
-              </a>
+              </NavLink>
 
               {/* Tooltip para modo colapsado */}
               {isCollapsed && (
