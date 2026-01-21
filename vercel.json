@@ -11,6 +11,10 @@
     {
       "source": "/static/:path*",
       "destination": "http://72.60.49.22:8005/static/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
