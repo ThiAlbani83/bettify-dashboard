@@ -6,10 +6,11 @@ const useAuditLinksStore = create((set, get) => ({
   links: [],
   filteredLinks: [],
   stats: {
-    confirmado: 0,
-    novo: 0,
-    falso_positivo: 0,
-    em_revisao: 0,
+    total: 0,
+    pendentes: 0,
+    usados: 0,
+    invalidos: 0,
+    duplicados: 0,
   },
   loading: false,
   error: null,
@@ -67,10 +68,11 @@ const useAuditLinksStore = create((set, get) => ({
       const data = await response.json();
       set({
         stats: {
-          confirmado: data.confirmado || 0,
-          novo: data.novo || 0,
-          falso_positivo: data.falso_positivo || 0,
-          em_revisao: data.em_revisao || 0,
+          total: data.total || 0,
+          pendentes: data.pendentes || 0,
+          usados: data.usados || 0,
+          invalidos: data.invalidos || 0,
+          duplicados: data.duplicados || 0,
         },
       });
     } catch (error) {

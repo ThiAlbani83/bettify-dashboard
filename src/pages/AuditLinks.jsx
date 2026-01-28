@@ -22,6 +22,8 @@ const AuditLinks = () => {
 
   const [actionLoading, setActionLoading] = useState({});
   const [selectedLink, setSelectedLink] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   // Buscar links ao montar o componente
   useEffect(() => {
@@ -36,6 +38,24 @@ const AuditLinks = () => {
 
     return () => clearInterval(interval);
   }, [fetchLinks, fetchStats]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [urlFilter, statusFilter, classificacaoFilter, filteredLinks.length]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredLinks.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedLinks = filteredLinks.slice(startIndex, endIndex);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   // Função para mudar status
   const handleStatusChange = async (linkId, newStatus) => {
@@ -394,80 +414,99 @@ const AuditLinks = () => {
         </div>
 
         {/* Cards de Estatísticas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Novo */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Total */}
+          <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-gray-300 overflow-hidden">
+            <div className="h-1.5 w-full bg-purple-500"></div>
+            <div className="p-5">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                    Total
+                  </p>
+                </div>
+                <div className="text-lg p-2 rounded-md bg-purple-50">📊</div>
+              </div>
+              <h2 className="text-3xl font-bold text-purple-600">
+                {stats.total?.toLocaleString("pt-BR") || 0}
+              </h2>
+              <p className="text-xs text-gray-500 mt-1">Todos os links</p>
+            </div>
+          </div>
+
+          {/* Pendentes */}
           <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-gray-300 overflow-hidden">
             <div className="h-1.5 w-full bg-blue-500"></div>
             <div className="p-5">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">
-                    Novos
+                    Pendentes
                   </p>
                 </div>
                 <div className="text-lg p-2 rounded-md bg-blue-50">🆕</div>
               </div>
               <h2 className="text-3xl font-bold text-blue-600">
-                {stats.novo.toLocaleString("pt-BR")}
+                {stats.pendentes?.toLocaleString("pt-BR") || 0}
               </h2>
-              <p className="text-xs text-gray-500 mt-1">Links pendentes</p>
+              <p className="text-xs text-gray-500 mt-1">Aguardando análise</p>
             </div>
           </div>
 
-          {/* Em Revisão */}
-          <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-gray-300 overflow-hidden">
-            <div className="h-1.5 w-full bg-yellow-500"></div>
-            <div className="p-5">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex-1">
-                  <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">
-                    Em Revisão
-                  </p>
-                </div>
-                <div className="text-lg p-2 rounded-md bg-yellow-50">🔍</div>
-              </div>
-              <h2 className="text-3xl font-bold text-yellow-600">
-                {stats.em_revisao.toLocaleString("pt-BR")}
-              </h2>
-              <p className="text-xs text-gray-500 mt-1">Sendo analisados</p>
-            </div>
-          </div>
-
-          {/* Confirmado */}
-          <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-gray-300 overflow-hidden">
-            <div className="h-1.5 w-full bg-red-500"></div>
-            <div className="p-5">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex-1">
-                  <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">
-                    Confirmados
-                  </p>
-                </div>
-                <div className="text-lg p-2 rounded-md bg-red-50">✅</div>
-              </div>
-              <h2 className="text-3xl font-bold text-red-600">
-                {stats.confirmado.toLocaleString("pt-BR")}
-              </h2>
-              <p className="text-xs text-gray-500 mt-1">Links válidos</p>
-            </div>
-          </div>
-
-          {/* Falso Positivo */}
+          {/* Usados */}
           <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-gray-300 overflow-hidden">
             <div className="h-1.5 w-full bg-green-500"></div>
             <div className="p-5">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">
-                    Falso Positivo
+                    Usados
                   </p>
                 </div>
-                <div className="text-lg p-2 rounded-md bg-green-50">❌</div>
+                <div className="text-lg p-2 rounded-md bg-green-50">✅</div>
               </div>
               <h2 className="text-3xl font-bold text-green-600">
-                {stats.falso_positivo.toLocaleString("pt-BR")}
+                {stats.usados?.toLocaleString("pt-BR") || 0}
               </h2>
-              <p className="text-xs text-gray-500 mt-1">Não são ameaças</p>
+              <p className="text-xs text-gray-500 mt-1">Já processados</p>
+            </div>
+          </div>
+
+          {/* Inválidos */}
+          <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-gray-300 overflow-hidden">
+            <div className="h-1.5 w-full bg-red-500"></div>
+            <div className="p-5">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                    Inválidos
+                  </p>
+                </div>
+                <div className="text-lg p-2 rounded-md bg-red-50">❌</div>
+              </div>
+              <h2 className="text-3xl font-bold text-red-600">
+                {stats.invalidos?.toLocaleString("pt-BR") || 0}
+              </h2>
+              <p className="text-xs text-gray-500 mt-1">Links inválidos</p>
+            </div>
+          </div>
+
+          {/* Duplicados */}
+          <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-gray-300 overflow-hidden">
+            <div className="h-1.5 w-full bg-orange-500"></div>
+            <div className="p-5">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                    Duplicados
+                  </p>
+                </div>
+                <div className="text-lg p-2 rounded-md bg-orange-50">🔁</div>
+              </div>
+              <h2 className="text-3xl font-bold text-orange-600">
+                {stats.duplicados?.toLocaleString("pt-BR") || 0}
+              </h2>
+              <p className="text-xs text-gray-500 mt-1">Links duplicados</p>
             </div>
           </div>
         </div>
@@ -604,7 +643,7 @@ const AuditLinks = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredLinks.length === 0 ? (
+                {paginatedLinks.length === 0 ? (
                   <tr>
                     <td
                       colSpan="8"
@@ -622,7 +661,7 @@ const AuditLinks = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredLinks.map((link, index) => (
+                  paginatedLinks.map((link, index) => (
                     <tr
                       key={link.id || link._id || index}
                       onClick={() => setSelectedLink(link)}
@@ -723,6 +762,85 @@ const AuditLinks = () => {
             </table>
           </div>
         </div>
+
+        {/* Pagination Controls */}
+        {filteredLinks.length > itemsPerPage && (
+          <div className="bg-white rounded-lg shadow-md border-2 border-gray-300 p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                Mostrando {startIndex + 1} a{" "}
+                {Math.min(endIndex, filteredLinks.length)} de{" "}
+                {filteredLinks.length} links
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handlePageChange(1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 rounded-lg border-2 border-gray-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+                  title="Primeira página"
+                >
+                  ⏮️
+                </button>
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 rounded-lg border-2 border-gray-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+                  title="Página anterior"
+                >
+                  ◀️
+                </button>
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((page) => {
+                      return (
+                        page === 1 ||
+                        page === totalPages ||
+                        Math.abs(page - currentPage) <= 1
+                      );
+                    })
+                    .map((page, idx, arr) => {
+                      const prevPage = arr[idx - 1];
+                      const showEllipsis = prevPage && page - prevPage > 1;
+
+                      return (
+                        <React.Fragment key={page}>
+                          {showEllipsis && (
+                            <span className="px-2 text-gray-400">...</span>
+                          )}
+                          <button
+                            onClick={() => handlePageChange(page)}
+                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                              currentPage === page
+                                ? "bg-purple-600 text-white border-2 border-purple-600"
+                                : "border-2 border-gray-300 hover:bg-gray-100"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        </React.Fragment>
+                      );
+                    })}
+                </div>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 rounded-lg border-2 border-gray-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+                  title="Próxima página"
+                >
+                  ▶️
+                </button>
+                <button
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 rounded-lg border-2 border-gray-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+                  title="Última página"
+                >
+                  ⏭️
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Footer com estatísticas */}
         {filteredLinks.length > 0 && (
