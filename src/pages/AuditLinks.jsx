@@ -75,8 +75,14 @@ const AuditLinks = () => {
   // Função para obter a cor do badge de status
   const getStatusBadge = (status) => {
     const badges = {
+      pendente: {
+        label: "Pendente",
+        bg: "bg-blue-100",
+        text: "text-blue-800",
+        border: "border-blue-300",
+      },
       novo: {
-        label: "Novo",
+        label: "Pendente",
         bg: "bg-blue-100",
         text: "text-blue-800",
         border: "border-blue-300",
@@ -107,7 +113,7 @@ const AuditLinks = () => {
       },
     };
 
-    const badge = badges[status] || badges.novo;
+    const badge = badges[status] || badges.pendente;
     return (
       <span
         className={`px-3 py-1 rounded-full text-xs font-semibold border ${badge.bg} ${badge.text} ${badge.border}`}
@@ -221,14 +227,16 @@ const AuditLinks = () => {
                 </p>
               </div>
 
-              {/* Data/Hora */}
-              <div className="bg-gray-50 rounded-lg p-4">
+              {/* Identificador */}
+              <div className="bg-purple-50 rounded-lg p-4 border-l-4 border-purple-500">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">📅</span>
-                  <h3 className="font-semibold text-gray-800">DATA/HORA</h3>
+                  <span className="text-lg">🏷️</span>
+                  <h3 className="font-semibold text-purple-800">
+                    IDENTIFICADOR
+                  </h3>
                 </div>
-                <p className="text-gray-700 pl-7">
-                  {formatDate(selectedLink.timestamp)}
+                <p className="text-gray-700 pl-7 font-semibold text-lg">
+                  {selectedLink.identificador || "-"}
                 </p>
               </div>
 
@@ -236,7 +244,7 @@ const AuditLinks = () => {
               <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-lg">🌐</span>
-                  <h3 className="font-semibold text-blue-800">URL</h3>
+                  <h3 className="font-semibold text-blue-800">LINK</h3>
                 </div>
                 <a
                   href={selectedLink.url}
@@ -246,30 +254,83 @@ const AuditLinks = () => {
                 >
                   {selectedLink.url}
                 </a>
+                <p className="text-gray-500 pl-7 text-xs mt-2">
+                  <strong>Normalizado:</strong>{" "}
+                  {selectedLink.link_normalizado || "-"}
+                </p>
               </div>
 
-              {/* Classificação */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg">🏷️</span>
-                  <h3 className="font-semibold text-gray-800">CLASSIFICAÇÃO</h3>
-                </div>
-                <div className="pl-7">
-                  {getClassificacaoBadge(selectedLink.classificacao)}
-                </div>
-              </div>
-
-              {/* Contexto/Processamento */}
+              {/* Canal de Origem */}
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">📋</span>
+                  <span className="text-lg">📡</span>
                   <h3 className="font-semibold text-gray-800">
-                    CONTEXTO/PROCESSAMENTO
+                    CANAL DE ORIGEM
                   </h3>
                 </div>
-                <p className="text-gray-700 pl-7 text-sm whitespace-pre-wrap">
-                  {selectedLink.contexto || "-"}
+                <p className="text-gray-700 pl-7">
+                  {selectedLink.canal || selectedLink.origem_canal || "-"}
                 </p>
+              </div>
+
+              {/* Tipo do Link e Informações */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-lg">ℹ️</span>
+                  <h3 className="font-semibold text-gray-800">INFORMAÇÕES</h3>
+                </div>
+                <div className="pl-7 space-y-2">
+                  <p className="flex items-center gap-2">
+                    <strong>Tipo:</strong>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        selectedLink.tipo === "publico"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-orange-100 text-orange-800"
+                      }`}
+                    >
+                      {selectedLink.tipo === "publico"
+                        ? "🌍 Público"
+                        : "🔒 Privado"}
+                    </span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <strong>Já Participa:</strong>
+                    <span className="text-xl">
+                      {selectedLink.ja_participa ? "✅ Sim" : "❌ Não"}
+                    </span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <strong>Usado:</strong>
+                    <span className="text-xl">
+                      {selectedLink.usado ? "✅ Sim" : "❌ Não"}
+                    </span>
+                  </p>
+                  {selectedLink.grupo_titulo && (
+                    <p>
+                      <strong>Título do Grupo:</strong>{" "}
+                      {selectedLink.grupo_titulo}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Datas */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-lg">📅</span>
+                  <h3 className="font-semibold text-gray-800">DATAS</h3>
+                </div>
+                <div className="pl-7 space-y-1 text-sm">
+                  <p>
+                    <strong>Criado em:</strong>{" "}
+                    {formatDate(selectedLink.created_at)}
+                  </p>
+                  <p>
+                    <strong>Atualizado em:</strong>{" "}
+                    {formatDate(selectedLink.updated_at)}
+                  </p>
+                </div>
               </div>
 
               {/* Status Atual */}
@@ -281,7 +342,7 @@ const AuditLinks = () => {
                   </h3>
                 </div>
                 <div className="pl-7">
-                  {getStatusBadge(selectedLink.status_auditoria || "novo")}
+                  {getStatusBadge(selectedLink.status_auditoria || "pendente")}
                 </div>
               </div>
 
@@ -517,19 +578,25 @@ const AuditLinks = () => {
               <thead className="bg-gradient-to-r from-purple-600 to-purple-700 text-white">
                 <tr>
                   <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider whitespace-nowrap">
+                    Identificador
+                  </th>
+                  <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider whitespace-nowrap">
+                    Link
+                  </th>
+                  <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider whitespace-nowrap">
+                    Canal Origem
+                  </th>
+                  <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider whitespace-nowrap">
+                    Tipo
+                  </th>
+                  <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider whitespace-nowrap">
+                    Já Participa
+                  </th>
+                  <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider whitespace-nowrap">
+                    Status
+                  </th>
+                  <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider whitespace-nowrap">
                     Data
-                  </th>
-                  <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider whitespace-nowrap">
-                    URL
-                  </th>
-                  <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider whitespace-nowrap">
-                    Classificação
-                  </th>
-                  <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider whitespace-nowrap">
-                    Processamento
-                  </th>
-                  <th className="px-3 py-4 text-left text-xs font-bold uppercase tracking-wider whitespace-nowrap">
-                    Status Auditoria
                   </th>
                   <th className="px-3 py-4 text-center text-xs font-bold uppercase tracking-wider whitespace-nowrap">
                     Ações
@@ -540,7 +607,7 @@ const AuditLinks = () => {
                 {filteredLinks.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="6"
+                      colSpan="8"
                       className="px-6 py-12 text-center text-gray-500"
                     >
                       <div className="flex flex-col items-center gap-3">
@@ -562,8 +629,8 @@ const AuditLinks = () => {
                       className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
                     >
                       <td className="px-3 py-3 whitespace-nowrap">
-                        <span className="text-xs text-gray-600">
-                          {formatDate(link.timestamp)}
+                        <span className="text-xs font-semibold text-purple-700">
+                          {link.identificador || "-"}
                         </span>
                       </td>
                       <td className="px-3 py-3">
@@ -578,16 +645,36 @@ const AuditLinks = () => {
                           {link.url}
                         </a>
                       </td>
-                      <td className="px-3 py-3 whitespace-nowrap">
-                        {getClassificacaoBadge(link.classificacao)}
-                      </td>
                       <td className="px-3 py-3">
-                        <p className="text-xs text-gray-700 line-clamp-2 max-w-xs">
-                          {link.contexto || "-"}
-                        </p>
+                        <span className="text-xs text-gray-700">
+                          {link.canal || "-"}
+                        </span>
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap">
-                        {getStatusBadge(link.status_auditoria || "novo")}
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                            link.tipo === "publico"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-orange-100 text-orange-800"
+                          }`}
+                        >
+                          {link.tipo === "publico"
+                            ? "🌍 Público"
+                            : "🔒 Privado"}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-center">
+                        <span className="text-lg">
+                          {link.ja_participa ? "✅" : "❌"}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        {getStatusBadge(link.status_auditoria || "pendente")}
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <span className="text-xs text-gray-600">
+                          {formatDate(link.created_at || link.updated_at)}
+                        </span>
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap">
                         <div

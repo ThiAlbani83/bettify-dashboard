@@ -6,10 +6,24 @@ const useAlertsStore = create((set, get) => ({
   alerts: [],
   filteredAlerts: [],
   stats: {
-    falso_positivo: 0,
-    em_revisao: 0,
-    confirmado: 0,
-    novo: 0,
+    total: 0,
+    pendente: 0,
+    por_prioridade: {
+      BAIXA: 0,
+      MEDIA: 0,
+      ALTA: 0,
+    },
+    por_status: {
+      pendente: 0,
+    },
+    por_tipo: {
+      phishing: 0,
+      aposta_ilegal: 0,
+      vazamento_dados: 0,
+      fraude: 0,
+      venda_ilicita: 0,
+    },
+    urgentes: 0,
   },
   loading: false,
   error: null,
@@ -28,8 +42,21 @@ const useAlertsStore = create((set, get) => ({
         throw new Error("Erro ao buscar alertas");
       }
       const data = await response.json();
+      // Mapear a nova estrutura para a estrutura esperada
+      const alertas = (data.alertas || data).map((alert) => ({
+        ...alert,
+        id: alert._id,
+        mensagem_id: alert.mensagem_id,
+        mensagem_texto: alert.texto,
+        canal: alert.canal,
+        remetente: alert.remetente,
+        data_hora: alert.data_mensagem || alert.created_at,
+        status_auditoria: alert.triagem?.status || "pendente",
+        palavras_encontradas: alert.keywords_matched || [],
+        severidade: alert.triagem?.prioridade?.toLowerCase() || "baixa",
+      }));
       set({
-        alerts: data,
+        alerts: alertas,
         loading: false,
         lastUpdate: new Date(),
       });
@@ -53,7 +80,26 @@ const useAlertsStore = create((set, get) => ({
       }
       const data = await response.json();
       set({
-        stats: data,
+        stats: {
+          total: data.total || 0,
+          pendente: data.por_status?.pendente || 0,
+          por_prioridade: {
+            BAIXA: data.por_prioridade?.BAIXA || 0,
+            MEDIA: data.por_prioridade?.MEDIA || 0,
+            ALTA: data.por_prioridade?.ALTA || 0,
+          },
+          por_status: {
+            pendente: data.por_status?.pendente || 0,
+          },
+          por_tipo: {
+            phishing: data.por_tipo?.phishing || 0,
+            aposta_ilegal: data.por_tipo?.aposta_ilegal || 0,
+            vazamento_dados: data.por_tipo?.vazamento_dados || 0,
+            fraude: data.por_tipo?.fraude || 0,
+            venda_ilicita: data.por_tipo?.venda_ilicita || 0,
+          },
+          urgentes: data.urgentes || 0,
+        },
       });
     } catch (error) {
       console.error("Erro ao buscar estatísticas:", error);
@@ -146,7 +192,9 @@ const useAlertsStore = create((set, get) => ({
       // Atualizar o alerta localmente
       const { alerts } = get();
       const updatedAlerts = alerts.map((alert) =>
-        alert.id === alertId || alert.mensagem_id === alertId
+        alert._id === alertId ||
+        alert.id === alertId ||
+        alert.mensagem_id === alertId
           ? { ...alert, status_auditoria: newStatus }
           : alert,
       );
@@ -178,7 +226,10 @@ const useAlertsStore = create((set, get) => ({
       // Remover o alerta localmente
       const { alerts } = get();
       const updatedAlerts = alerts.filter(
-        (alert) => alert.id !== alertId && alert.mensagem_id !== alertId,
+        (alert) =>
+          alert._id !== alertId &&
+          alert.id !== alertId &&
+          alert.mensagem_id !== alertId,
       );
 
       set({ alerts: updatedAlerts });

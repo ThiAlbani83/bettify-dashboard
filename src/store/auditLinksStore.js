@@ -29,8 +29,20 @@ const useAuditLinksStore = create((set, get) => ({
         throw new Error("Erro ao buscar links");
       }
       const data = await response.json();
+      // Mapear a nova estrutura para a estrutura esperada
+      const links = (data.links || data).map((link) => ({
+        ...link,
+        id: link._id,
+        url: link.link,
+        canal: link.origem_canal,
+        identificador: link.identificador,
+        tipo: link.tipo_link,
+        status_auditoria: link.status || "pendente",
+        ja_participa: link.ja_participa || false,
+        usado: link.usado || false,
+      }));
       set({
-        links: data.alertas || data,
+        links: links,
         loading: false,
         lastUpdate: new Date(),
       });
@@ -54,7 +66,12 @@ const useAuditLinksStore = create((set, get) => ({
       }
       const data = await response.json();
       set({
-        stats: data,
+        stats: {
+          confirmado: data.confirmado || 0,
+          novo: data.novo || 0,
+          falso_positivo: data.falso_positivo || 0,
+          em_revisao: data.em_revisao || 0,
+        },
       });
     } catch (error) {
       console.error("Erro ao buscar estatísticas:", error);

@@ -20,6 +20,8 @@ const Alerts = () => {
 
   const [actionLoading, setActionLoading] = useState({});
   const [selectedAlert, setSelectedAlert] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   // Buscar alertas ao montar o componente
   useEffect(() => {
@@ -34,6 +36,24 @@ const Alerts = () => {
 
     return () => clearInterval(interval);
   }, [fetchAlerts, fetchStats]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [textFilter, statusFilter, filteredAlerts.length]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredAlerts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedAlerts = filteredAlerts.slice(startIndex, endIndex);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   // Função para mudar status
   const handleStatusChange = async (alertId, newStatus) => {
@@ -73,17 +93,35 @@ const Alerts = () => {
   // Função para obter a cor do badge de status
   const getStatusBadge = (status) => {
     const badges = {
-      novo: {
-        label: "Novo",
+      pendente: {
+        label: "Pendente",
         bg: "bg-blue-100",
         text: "text-blue-800",
         border: "border-blue-300",
       },
-      em_revisao: {
-        label: "Em Revisão",
+      novo: {
+        label: "Pendente",
+        bg: "bg-blue-100",
+        text: "text-blue-800",
+        border: "border-blue-300",
+      },
+      em_analise: {
+        label: "Em Análise",
         bg: "bg-yellow-100",
         text: "text-yellow-800",
         border: "border-yellow-300",
+      },
+      em_revisao: {
+        label: "Em Análise",
+        bg: "bg-yellow-100",
+        text: "text-yellow-800",
+        border: "border-yellow-300",
+      },
+      confirmado: {
+        label: "Confirmado",
+        bg: "bg-red-100",
+        text: "text-red-800",
+        border: "border-red-300",
       },
       falso_positivo: {
         label: "Falso Positivo",
@@ -99,7 +137,7 @@ const Alerts = () => {
       },
     };
 
-    const badge = badges[status] || badges.novo;
+    const badge = badges[status] || badges.pendente;
     return (
       <span
         className={`px-3 py-1 rounded-full text-xs font-semibold border ${badge.bg} ${badge.text} ${badge.border}`}
@@ -273,6 +311,79 @@ const Alerts = () => {
                 </div>
               </div>
 
+              {/* Classificação IA */}
+              {selectedAlert.classificacao && (
+                <div className="bg-purple-50 border-l-4 border-purple-500 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-lg">🤖</span>
+                    <h3 className="font-semibold text-purple-800">
+                      CLASSIFICAÇÃO IA
+                    </h3>
+                  </div>
+                  <div className="text-sm text-gray-700 pl-7 space-y-2">
+                    <p>
+                      <strong>Tipo:</strong>{" "}
+                      <span className="px-2 py-1 bg-purple-100 rounded text-purple-800 font-semibold">
+                        {selectedAlert.classificacao.tipo}
+                      </span>
+                    </p>
+                    <p>
+                      <strong>Confiança:</strong>{" "}
+                      {(selectedAlert.classificacao.confianca * 100).toFixed(0)}
+                      %
+                    </p>
+                    <p>
+                      <strong>Explicação:</strong>{" "}
+                      {selectedAlert.classificacao.explicacao}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Triagem Automática */}
+              {selectedAlert.triagem && (
+                <div className="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-lg">⚡</span>
+                    <h3 className="font-semibold text-orange-800">
+                      TRIAGEM AUTOMÁTICA
+                    </h3>
+                  </div>
+                  <div className="text-sm text-gray-700 pl-7 space-y-2">
+                    <p>
+                      <strong>Prioridade:</strong>{" "}
+                      {getSeverityBadge(selectedAlert.triagem.prioridade)}
+                    </p>
+                    <p>
+                      <strong>Score de Risco:</strong>{" "}
+                      <span className="font-bold text-orange-700">
+                        {selectedAlert.triagem.score_risco}
+                      </span>
+                    </p>
+                    {selectedAlert.triagem.fatores_risco && (
+                      <div>
+                        <strong>Fatores de Risco:</strong>
+                        <ul className="list-disc list-inside mt-1 space-y-1">
+                          {selectedAlert.triagem.fatores_risco.map(
+                            (fator, idx) => (
+                              <li key={idx} className="text-xs">
+                                {fator}
+                              </li>
+                            ),
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                    {selectedAlert.triagem.sugestao_analista && (
+                      <p className="mt-2 p-2 bg-white rounded border border-orange-200">
+                        <strong>Sugestão:</strong>{" "}
+                        {selectedAlert.triagem.sugestao_analista}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Status Atual */}
               <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-3">
@@ -332,80 +443,173 @@ const Alerts = () => {
         </div>
 
         {/* Cards de Estatísticas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Novo */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Total */}
+          <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-gray-300 overflow-hidden">
+            <div className="h-1.5 w-full bg-indigo-500"></div>
+            <div className="p-5">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                    Total
+                  </p>
+                </div>
+                <div className="text-lg p-2 rounded-md bg-indigo-50">📊</div>
+              </div>
+              <h2 className="text-3xl font-bold text-indigo-600">
+                {stats.total?.toLocaleString("pt-BR") || 0}
+              </h2>
+              <p className="text-xs text-gray-500 mt-1">Todos os alertas</p>
+            </div>
+          </div>
+
+          {/* Pendentes */}
           <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-gray-300 overflow-hidden">
             <div className="h-1.5 w-full bg-blue-500"></div>
             <div className="p-5">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">
-                    Novos
+                    Pendentes
                   </p>
                 </div>
                 <div className="text-lg p-2 rounded-md bg-blue-50">🆕</div>
               </div>
               <h2 className="text-3xl font-bold text-blue-600">
-                {stats.novo.toLocaleString("pt-BR")}
+                {stats.pendente?.toLocaleString("pt-BR") || 0}
               </h2>
-              <p className="text-xs text-gray-500 mt-1">Alertas pendentes</p>
+              <p className="text-xs text-gray-500 mt-1">Aguardando análise</p>
             </div>
           </div>
 
-          {/* Em Revisão */}
-          <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-gray-300 overflow-hidden">
-            <div className="h-1.5 w-full bg-yellow-500"></div>
-            <div className="p-5">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex-1">
-                  <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">
-                    Em Revisão
-                  </p>
-                </div>
-                <div className="text-lg p-2 rounded-md bg-yellow-50">🔍</div>
-              </div>
-              <h2 className="text-3xl font-bold text-yellow-600">
-                {stats.em_revisao.toLocaleString("pt-BR")}
-              </h2>
-              <p className="text-xs text-gray-500 mt-1">Sendo analisados</p>
-            </div>
-          </div>
-
-          {/* Confirmado */}
+          {/* Urgentes */}
           <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-gray-300 overflow-hidden">
             <div className="h-1.5 w-full bg-red-500"></div>
             <div className="p-5">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">
-                    Confirmados
+                    Urgentes
                   </p>
                 </div>
-                <div className="text-lg p-2 rounded-md bg-red-50">✅</div>
+                <div className="text-lg p-2 rounded-md bg-red-50">🚨</div>
               </div>
               <h2 className="text-3xl font-bold text-red-600">
-                {stats.confirmado.toLocaleString("pt-BR")}
+                {stats.urgentes?.toLocaleString("pt-BR") || 0}
               </h2>
-              <p className="text-xs text-gray-500 mt-1">Alertas válidos</p>
+              <p className="text-xs text-gray-500 mt-1">Requerem ação</p>
             </div>
           </div>
 
-          {/* Falso Positivo */}
+          {/* Prioridade Alta */}
           <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-gray-300 overflow-hidden">
-            <div className="h-1.5 w-full bg-green-500"></div>
+            <div className="h-1.5 w-full bg-orange-500"></div>
             <div className="p-5">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">
-                    Falso Positivo
+                    Alta Prioridade
                   </p>
                 </div>
-                <div className="text-lg p-2 rounded-md bg-green-50">❌</div>
+                <div className="text-lg p-2 rounded-md bg-orange-50">⚠️</div>
               </div>
-              <h2 className="text-3xl font-bold text-green-600">
-                {stats.falso_positivo.toLocaleString("pt-BR")}
+              <h2 className="text-3xl font-bold text-orange-600">
+                {stats.por_prioridade?.ALTA?.toLocaleString("pt-BR") || 0}
               </h2>
-              <p className="text-xs text-gray-500 mt-1">Não são ameaças</p>
+              <p className="text-xs text-gray-500 mt-1">Prioridade alta</p>
+            </div>
+          </div>
+
+          {/* Prioridade Média */}
+          <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-gray-300 overflow-hidden">
+            <div className="h-1.5 w-full bg-yellow-500"></div>
+            <div className="p-5">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                    Média Prioridade
+                  </p>
+                </div>
+                <div className="text-lg p-2 rounded-md bg-yellow-50">📌</div>
+              </div>
+              <h2 className="text-3xl font-bold text-yellow-600">
+                {stats.por_prioridade?.MEDIA?.toLocaleString("pt-BR") || 0}
+              </h2>
+              <p className="text-xs text-gray-500 mt-1">Prioridade média</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Alertas por Tipo */}
+        <div className="bg-white rounded-lg shadow-md border-2 border-gray-300 p-6">
+          <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <span className="text-2xl">🎯</span>
+            Alertas por Tipo
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {/* Vazamento de Dados */}
+            <div className="bg-purple-50 rounded-lg p-4 border-2 border-purple-200">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl">🔓</span>
+                <p className="text-xs font-semibold text-purple-800 uppercase">
+                  Vazamento
+                </p>
+              </div>
+              <p className="text-2xl font-bold text-purple-600">
+                {stats.por_tipo?.vazamento_dados?.toLocaleString("pt-BR") || 0}
+              </p>
+            </div>
+
+            {/* Phishing */}
+            <div className="bg-red-50 rounded-lg p-4 border-2 border-red-200">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl">🎣</span>
+                <p className="text-xs font-semibold text-red-800 uppercase">
+                  Phishing
+                </p>
+              </div>
+              <p className="text-2xl font-bold text-red-600">
+                {stats.por_tipo?.phishing?.toLocaleString("pt-BR") || 0}
+              </p>
+            </div>
+
+            {/* Aposta Ilegal */}
+            <div className="bg-orange-50 rounded-lg p-4 border-2 border-orange-200">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl">🎰</span>
+                <p className="text-xs font-semibold text-orange-800 uppercase">
+                  Aposta
+                </p>
+              </div>
+              <p className="text-2xl font-bold text-orange-600">
+                {stats.por_tipo?.aposta_ilegal?.toLocaleString("pt-BR") || 0}
+              </p>
+            </div>
+
+            {/* Venda Ilícita */}
+            <div className="bg-yellow-50 rounded-lg p-4 border-2 border-yellow-200">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl">🛒</span>
+                <p className="text-xs font-semibold text-yellow-800 uppercase">
+                  Venda Ilícita
+                </p>
+              </div>
+              <p className="text-2xl font-bold text-yellow-600">
+                {stats.por_tipo?.venda_ilicita?.toLocaleString("pt-BR") || 0}
+              </p>
+            </div>
+
+            {/* Fraude */}
+            <div className="bg-pink-50 rounded-lg p-4 border-2 border-pink-200">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl">💳</span>
+                <p className="text-xs font-semibold text-pink-800 uppercase">
+                  Fraude
+                </p>
+              </div>
+              <p className="text-2xl font-bold text-pink-600">
+                {stats.por_tipo?.fraude?.toLocaleString("pt-BR") || 0}
+              </p>
             </div>
           </div>
         </div>
@@ -446,8 +650,9 @@ const Alerts = () => {
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white cursor-pointer"
               >
                 <option value="todos">Todos (Exceto Deletados)</option>
-                <option value="novo">Novo</option>
-                <option value="em_revisao">Em Revisão</option>
+                <option value="pendente">Pendente</option>
+                <option value="em_analise">Em Análise</option>
+                <option value="confirmado">Confirmado</option>
                 <option value="falso_positivo">Falso Positivo</option>
                 <option value="deletado">Deletado</option>
               </select>
@@ -517,7 +722,7 @@ const Alerts = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredAlerts.length === 0 ? (
+                {paginatedAlerts.length === 0 ? (
                   <tr>
                     <td
                       colSpan="8"
@@ -535,7 +740,7 @@ const Alerts = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredAlerts.map((alert, index) => (
+                  paginatedAlerts.map((alert, index) => (
                     <tr
                       key={alert.id || index}
                       onClick={() => setSelectedAlert(alert)}
@@ -593,20 +798,18 @@ const Alerts = () => {
                         >
                           {/* Dropdown de Status */}
                           <select
-                            value={alert.status_auditoria || "novo"}
+                            value={alert.status_auditoria || "pendente"}
                             onChange={(e) =>
                               handleStatusChange(
-                                alert.id || alert.mensagem_id,
+                                alert._id || alert.id,
                                 e.target.value,
                               )
                             }
-                            disabled={
-                              actionLoading[alert.id || alert.mensagem_id]
-                            }
+                            disabled={actionLoading[alert._id || alert.id]}
                             className="px-3 py-1.5 text-xs border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <option value="novo">Novo</option>
-                            <option value="em_revisao">Em Revisão</option>
+                            <option value="pendente">Pendente</option>
+                            <option value="em_analise">Em Análise</option>
                             <option value="confirmado">Confirmado</option>
                             <option value="falso_positivo">
                               Falso Positivo
@@ -616,15 +819,21 @@ const Alerts = () => {
                           {/* Botão Deletar */}
                           <button
                             onClick={() =>
-                              handleDelete(alert.id || alert.mensagem_id)
+                              handleDelete(
+                                alert.mensagem_id || alert._id || alert.id,
+                              )
                             }
                             disabled={
-                              actionLoading[alert.id || alert.mensagem_id]
+                              actionLoading[
+                                alert.mensagem_id || alert._id || alert.id
+                              ]
                             }
                             className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                             title="Deletar alerta"
                           >
-                            {actionLoading[alert.id || alert.mensagem_id] ? (
+                            {actionLoading[
+                              alert.mensagem_id || alert._id || alert.id
+                            ] ? (
                               <span className="animate-spin">⏳</span>
                             ) : (
                               <>🗑️</>
@@ -640,6 +849,87 @@ const Alerts = () => {
           </div>
         </div>
 
+        {/* Pagination Controls */}
+        {filteredAlerts.length > itemsPerPage && (
+          <div className="bg-white rounded-lg shadow-md border-2 border-gray-300 p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                Mostrando {startIndex + 1} a{" "}
+                {Math.min(endIndex, filteredAlerts.length)} de{" "}
+                {filteredAlerts.length} alertas
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handlePageChange(1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 rounded-lg border-2 border-gray-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+                  title="Primeira página"
+                >
+                  ⏮️
+                </button>
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 rounded-lg border-2 border-gray-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+                  title="Página anterior"
+                >
+                  ◀️
+                </button>
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((page) => {
+                      // Show first page, last page, current page and adjacent pages
+                      return (
+                        page === 1 ||
+                        page === totalPages ||
+                        Math.abs(page - currentPage) <= 1
+                      );
+                    })
+                    .map((page, idx, arr) => {
+                      // Add ellipsis if there's a gap
+                      const prevPage = arr[idx - 1];
+                      const showEllipsis = prevPage && page - prevPage > 1;
+
+                      return (
+                        <React.Fragment key={page}>
+                          {showEllipsis && (
+                            <span className="px-2 text-gray-400">...</span>
+                          )}
+                          <button
+                            onClick={() => handlePageChange(page)}
+                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                              currentPage === page
+                                ? "bg-blue-600 text-white border-2 border-blue-600"
+                                : "border-2 border-gray-300 hover:bg-gray-100"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        </React.Fragment>
+                      );
+                    })}
+                </div>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 rounded-lg border-2 border-gray-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+                  title="Próxima página"
+                >
+                  ▶️
+                </button>
+                <button
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 rounded-lg border-2 border-gray-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+                  title="Última página"
+                >
+                  ⏭️
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Footer com estatísticas */}
         {filteredAlerts.length > 0 && (
           <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4 border-2 border-gray-300">
@@ -651,20 +941,31 @@ const Alerts = () => {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-gray-600">Novos:</span>
+                <span className="text-gray-600">Pendentes:</span>
                 <span className="font-bold text-blue-600">
                   {
-                    filteredAlerts.filter((a) => a.status_auditoria === "novo")
-                      .length
+                    filteredAlerts.filter(
+                      (a) => a.status_auditoria === "pendente",
+                    ).length
                   }
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-gray-600">Em Revisão:</span>
+                <span className="text-gray-600">Em Análise:</span>
                 <span className="font-bold text-yellow-600">
                   {
                     filteredAlerts.filter(
-                      (a) => a.status_auditoria === "em_revisao",
+                      (a) => a.status_auditoria === "em_analise",
+                    ).length
+                  }
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-600">Confirmados:</span>
+                <span className="font-bold text-red-600">
+                  {
+                    filteredAlerts.filter(
+                      (a) => a.status_auditoria === "confirmado",
                     ).length
                   }
                 </span>

@@ -25,19 +25,19 @@ export const API_ENDPOINTS = {
   analyticsInfiltracao: `${API_BASE_URL}/api/analytics/infiltracao-status`,
 
   // Alerts
-  keywordAlerts: `${API_BASE_URL}/api/keyword-alerts`,
-  keywordAlertsStats: `${API_BASE_URL}/api/keyword-alerts/stats`,
+  keywordAlerts: `${API_BASE_URL}/api/v2/alerts`,
+  keywordAlertsStats: `${API_BASE_URL}/api/v2/alerts/stats`,
   keywordAlertUpdateStatus: (alertId) =>
-    `${API_BASE_URL}/api/keyword-alerts/${alertId}/status`,
+    `${API_BASE_URL}/api/v2/alerts/${alertId}/triagem`,
   keywordAlertDelete: (alertId) =>
     `${API_BASE_URL}/api/keyword-alerts/${alertId}`,
 
   // Audit Links
-  auditLinks: `${API_BASE_URL}/api/alerts`,
-  auditLinksStats: `${API_BASE_URL}/api/alerts/stats`,
+  auditLinks: `${API_BASE_URL}/api/v2/links/pendentes`,
+  auditLinksStats: `${API_BASE_URL}/api/v2/links/stats`,
   auditLinkUpdateStatus: (linkId) =>
-    `${API_BASE_URL}/api/alerts/${linkId}/status`,
-  auditLinkDelete: (linkId) => `${API_BASE_URL}/api/alerts/${linkId}`,
+    `${API_BASE_URL}/api/v2/links/${linkId}/status`,
+  auditLinkDelete: (linkId) => `${API_BASE_URL}/api/v2/links/${linkId}`,
 };
 
 // Helper para construir URL de arquivos
