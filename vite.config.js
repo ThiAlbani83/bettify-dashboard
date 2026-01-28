@@ -8,18 +8,18 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://72.60.49.22:8005",
+        target: "http://144.217.243.153:8005",
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path,
       },
       "/uploads": {
-        target: "http://72.60.49.22:8005",
+        target: "http://144.217.243.153:8005",
         changeOrigin: true,
         secure: false,
       },
       "/static": {
-        target: "http://72.60.49.22:8005",
+        target: "http://144.217.243.153:8005",
         changeOrigin: true,
         secure: false,
       },
